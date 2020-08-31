@@ -5,6 +5,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="application/x-javascript" src="js/graphics.js"></script>
 <script type="application/x-javascript" src="js/integrity.js"></script>
+<script type="application/x-javascript" src="js/solve.js"></script>
 <script>
 
 
@@ -67,7 +68,7 @@ $(document).ready(function(){
   		else if (i==3 || i==6) customClass+= " top";
   		if (j==2 || j==5) customClass+= " right";
   		else if (j==3 || j==6) customClass+= " left";
-  		cells.push("<input class='" + customClass + "' id='" + (i*9+j) + "' type='text' value='" + value + "' " + readonly + "/>");
+  		cells.push("<input class='" + customClass + "' id='" + (i*9+j) + "' type='text' value='" + value.toString() + "' " + readonly + "/>");
   	}
   }
 
@@ -85,25 +86,7 @@ $(document).ready(function(){
 
 });
 
-$(document).ready(function(){
-  $("body").on("change", ".number", function(){
-  	var flag = checkIntegrityCell(this.id);
-  	if (flag) {
-  		startAnimationIntegrityError(this.id, flag);
-  		console.log(flag);
-  	}
-  	if (this.value!="") $("#"+this.id).addClass("valued");
-  	else $("#"+this.id).removeClass("valued");
-  });
 
-  $("body").on("click", ".valued", function(){
-  	var flag = checkIntegrityCell(this.id);
-  	if (flag) {
-  		startAnimationIntegrityError(this.id, flag);
-  		console.log(flag);
-  	}
-  });
-});
 </script>
 </head>
 <body>
@@ -112,6 +95,7 @@ $(document).ready(function(){
 
 <div id="content"></div>
 
+<button id="solve" onClick="solve()">Solve</button>
 <button id="checkIntegrity" onClick="checkIntegrity(1)">Check Integrity</button>
 
 </body>

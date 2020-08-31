@@ -27,9 +27,6 @@
 		.valued {
 			background-color: lightgrey;
 		}
-		.init {
-
-		}
 		.inconsistent {
 			background-color: #FF8000;
 			-webkit-transition: background 1s linear;

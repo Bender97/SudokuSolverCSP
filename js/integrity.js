@@ -34,14 +34,14 @@ function checkIntegrityByCol(id, value) {
 	return 0;
 }
 
-function extractSubTL(id) { // extract sub Top Left cell id
+function getSubTL(id) { // extract sub Top Left cell id
 	var row = Math.floor(id/27)*27;
 	var col = Math.floor(getCol(id)/3)*3;
 	return row+col;
 }
 
 function checkIntegrityBySub(id, value) {
-	var subTL = extractSubTL(id);
+	var subTL = getSubTL(id);
 	var i, j;
 	for (i=subTL; i<subTL+27; i+=9)
 		for (j=0; j<3; j++) {
