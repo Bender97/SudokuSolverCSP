@@ -44,8 +44,6 @@ function solveComplexConstraints() {
 		break;
 	}
 	
-
-	break;
 }
 
 function removeElem(myID, predecessorID) {
