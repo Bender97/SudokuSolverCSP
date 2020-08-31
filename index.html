@@ -1,65 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<style>
-		.number {
-			width:  34px;
-			height: 34px;
-			padding: 12px 20px;
-  box-sizing: border-box;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  background-color: #f8f8f8;
-  resize: none;
-  padding:0;
-		}
-		.right {
-			border-right:2px solid black;
-		}
-		.left {
-			border-left:2px solid black;
-		}
-		.bottom {
-			border-bottom:2px solid black;
-		}
-		.top {
-			border-top:2px solid black;
-		}
-		.number {
-			text-align: center;
-		}
-		.valued {
-			background-color: lightgrey;
-		}
-		.init {
-
-		}
-		.inconsistent {
-			background-color: #FF8000;
-			-webkit-transition: background 1s linear;
-			-moz-transition: background 1s linear;
-			-ms-transition: background 1s linear;
-			-o-transition: background 1s linear;
-			transition: background 1s linear;
-		}
-		.inconsistent2 {
-			background-color: white;
-			-webkit-transition: background 1s linear;
-			-moz-transition: background 1s linear;
-			-ms-transition: background 1s linear;
-			-o-transition: background 1s linear;
-			transition: background 1s linear;
-		}
-
-		#checkIntegrity {
-			position: absolute;
-			left: 300px;
-			margin-top: 35px;
-		}
-
-	</style>
+	<link rel="stylesheet" type="text/css" href="style/style.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="application/x-javascript" src="js/graphics.js"></script>
+<script type="application/x-javascript" src="js/integrity.js"></script>
 <script>
+
 
 var easy = [5, 0, 0, 0, 8, 6, 7, 0, 0,
 			0, 3, 0, 0, 0, 2, 4, 0, 9,
@@ -101,170 +48,6 @@ function parseCol(col, i, row) {
 	
 }
 
-function colour(elem) {
-	var handle, i;
-	for (i=0; i<4; i++) {
-		handle = document.getElementById(elem[i]);
-		if (handle!=null) handle.style.background = "red";
-	}
-}
-
-function checkIntegrityByRow(id, value) {
-	var col = getCol(id);
-	var base = getRow(id);
-	var i;
-	for (i=0; i<9; i++)
-		if (i!=col) {
-			var targetCellID = base*9 + i;
-			var cell = document.getElementById(targetCellID);
-			if (cell!=null && cell.value!="") {
-				if (cell.value==value) {
-					console.log("INSIDE ROW");
-					return targetCellID;	// integrity failure
-				}
-			}
-		}
-	return 0;
-}
-
-function checkIntegrityByCol(id, value) {
-	var col = getCol(id);
-	var i;
-	for (i=0; i<9; i++) {
-		var targetCellID = i*9+col;
-		if (targetCellID!=id) {
-			var cell = document.getElementById(targetCellID);
-			if (cell!=null && cell.value!="") {
-				if (cell.value==value) {
-					console.log("INSIDE COL");
-					return targetCellID;	// integrity failure
-				}
-			}
-		}
-	}
-	return 0;
-}
-
-function extractSubTL(id) { // extract sub Top Left cell id
-	var row = Math.floor(id/27)*27;
-	var col = Math.floor(getCol(id)/3)*3;
-	return row+col;
-}
-
-function checkIntegrityBySub(id, value) {
-	var subTL = extractSubTL(id);
-	var i, j;
-	for (i=subTL; i<subTL+27; i+=9)
-		for (j=0; j<3; j++) {
-			var targetCellID = i+j;
-			if (targetCellID!=id) {
-				var cell = document.getElementById(targetCellID);
-				if (cell!=null && cell.value!="") {
-					if (cell.value==value) {
-						console.log("INSIDE SUB");
-						return targetCellID;	// integrity failure
-					}
-				}
-			}
-		}
-	return 0;
-}
-
-function startAnimationConsistent() {
-	// TODO
-}
-
-function checkIntegrity(animate) {
-	var cellID = 0;
-	var flag;
-	for (; cellID<81; cellID++) { // iterate over all cells of the sudoku
-		if (flag=checkIntegrityCell(cellID)) {
-			
-			startAnimationIntegrityError(cellID, flag);
-			return flag;
-		}
-	}
-	if (animate) {
-		startAnimationConsistent();
-	}
-	console.log("200 OK");
-}
-
-function checkIntegrityCell(cellID) {
-	cell = document.getElementById(cellID);
-
-	if (cell!=null && cell.value!="") {
-		var checkRow = checkIntegrityByRow(cellID, cell.value);
-		if (checkRow) {
-			console.log("INTEGRITY ERROR of cell " + cellID + " with value " + cell.value);
-			return checkRow;
-		}
-
-		var checkCol = checkIntegrityByCol(cellID, cell.value);
-		if (checkCol) {
-			console.log("INTEGRITY ERROR of cell " + cellID + " with value " + cell.value);
-			return checkCol;
-		}
-
-		var checkSub = checkIntegrityBySub(cellID, cell.value);
-		if (checkSub) {
-			console.log("INTEGRITY ERROR of cell " + cellID + " with value " + cell.value);
-			return checkSub;
-		}
-	}
-	return 0;
-}
-
-function startAnimation(id) {
-  	
-  	row = getRow(parseInt(this.id));
-  	col = getCol(parseInt(this.id));
-  	console.log(this.id + " -- row: " + row + " col: " + col);
-
-  	var i;
-  	var queue = [];
-
-  	for (i=1; i<9; i++) {
-  		queue.push(parseRow(row, i, col).concat(parseCol(col, i, row)));
-  		setTimeout(colour, 200*i, (queue.shift()));
-  	}
-
-}
-
-function startAnimationIntegrityError(id, target) {
-	console.log("called");
-	$("#"+id).addClass("inconsistent");
-	$("#"+target).addClass("inconsistent");
-
-	setTimeout(function() {
-		$("#"+id).removeClass("inconsistent");
-		$("#"+target).removeClass("inconsistent");
-		$("#"+id).addClass("inconsistent2");
-		$("#"+target).addClass("inconsistent2");
-	}, 1000);
-
-	setTimeout(function() {
-
-		$("#"+id).removeClass("inconsistent2");
-		$("#"+target).removeClass("inconsistent2");
-		$("#"+id).addClass("inconsistent");
-		$("#"+target).addClass("inconsistent");
-	}, 3000);
-
-	setTimeout(function() {
-		$("#"+id).removeClass("inconsistent");
-		$("#"+target).removeClass("inconsistent");
-		$("#"+id).addClass("inconsistent2");
-		$("#"+target).addClass("inconsistent2");
-	}, 5000);
-
-	setTimeout(function() {
-
-		$("#"+id).removeClass("inconsistent2");
-		$("#"+target).removeClass("inconsistent2");
-	}, 7000);
-}
-
 $(document).ready(function(){
   var i, j;
   var cells = [];
@@ -303,13 +86,6 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-  /*$(".valued").click(function(){
-  	console.log("sono qua");
-
-  	startAnimation(this.id);
-
-  	checkIntegrityCell(this.id);
-  });*/
   $("body").on("change", ".number", function(){
   	var flag = checkIntegrityCell(this.id);
   	if (flag) {
@@ -326,7 +102,6 @@ $(document).ready(function(){
   		startAnimationIntegrityError(this.id, flag);
   		console.log(flag);
   	}
-  	console.log("sono qua");
   });
 });
 </script>
