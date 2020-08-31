@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		.number {
+			width:  34px;
+			height: 34px;
+			padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  resize: none;
+  padding:0;
+		}
+		.right {
+			border-right:2px solid black;
+		}
+		.left {
+			border-left:2px solid black;
+		}
+		.bottom {
+			border-bottom:2px solid black;
+		}
+		.top {
+			border-top:2px solid black;
+		}
+		.number {
+			text-align: center;
+		}
+		.valued {
+			background-color: lightgrey;
+		}
+		.init {
+
+		}
+		.inconsistent {
+			background-color: #FF8000;
+			-webkit-transition: background 1s linear;
+			-moz-transition: background 1s linear;
+			-ms-transition: background 1s linear;
+			-o-transition: background 1s linear;
+			transition: background 1s linear;
+		}
+		.inconsistent2 {
+			background-color: white;
+			-webkit-transition: background 1s linear;
+			-moz-transition: background 1s linear;
+			-ms-transition: background 1s linear;
+			-o-transition: background 1s linear;
+			transition: background 1s linear;
+		}
+
+		#checkIntegrity {
+			position: absolute;
+			left: 300px;
+			margin-top: 35px;
+		}
+
+	</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+
+var easy = [5, 0, 0, 0, 8, 6, 7, 0, 0,
+			0, 3, 0, 0, 0, 2, 4, 0, 9,
+			0, 0, 0, 0, 0, 0, 6, 2, 0,
+			0, 7, 0, 0, 0, 5, 0, 0, 0,
+			4, 0, 6, 0, 0, 0, 1, 0, 3,
+			0, 0, 0, 9, 0, 0, 0, 7, 0,
+			0, 5, 2, 0, 0, 0, 0, 0, 0,
+			7, 0, 1, 2, 0, 0, 0, 6, 0,
+			0, 0, 3, 7, 5, 0, 0, 0, 2
+			];
+
+function getRow(id) {
+  	return Math.floor(id/9);
+}
+function getCol(id) {
+  	return id%9;
+}
+
+function parseRow(row, i, col) {
+	var pre = row-i, post = row+i;
+	if (pre>=0 && post<=8)
+		return [(pre*9)+col , (post*9)+col];
+	else if(pre>=0)
+		return [(pre*9)+col , -1];
+	else if(post<=8)
+		return [-1, (post*9)+col];
+	else return [-1, -1];
+}
+function parseCol(col, i, row) {
+	var pre = col-i, post = col+i;
+	if (pre>=0 && post<=8)
+		return [(row*9)+pre , (row*9)+post];
+	else if(pre>=0)
+		return [(row*9)+pre , -1];
+	else if(post<=8)
+		return [-1, (row*9)+post];
+	else return [-1, -1];
+	
+}
+
+function colour(elem) {
+	var handle, i;
+	for (i=0; i<4; i++) {
+		handle = document.getElementById(elem[i]);
+		if (handle!=null) handle.style.background = "red";
+	}
+}
+
+function checkIntegrityByRow(id, value) {
+	var col = getCol(id);
+	var base = getRow(id);
+	var i;
+	for (i=0; i<9; i++)
+		if (i!=col) {
+			var targetCellID = base*9 + i;
+			var cell = document.getElementById(targetCellID);
+			if (cell!=null && cell.value!="") {
+				if (cell.value==value) {
+					console.log("INSIDE ROW");
+					return targetCellID;	// integrity failure
+				}
+			}
+		}
+	return 0;
+}
+
+function checkIntegrityByCol(id, value) {
+	var col = getCol(id);
+	var i;
+	for (i=0; i<9; i++) {
+		var targetCellID = i*9+col;
+		if (targetCellID!=id) {
+			var cell = document.getElementById(targetCellID);
+			if (cell!=null && cell.value!="") {
+				if (cell.value==value) {
+					console.log("INSIDE COL");
+					return targetCellID;	// integrity failure
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+function extractSubTL(id) { // extract sub Top Left cell id
+	var row = Math.floor(id/27)*27;
+	var col = Math.floor(getCol(id)/3)*3;
+	return row+col;
+}
+
+function checkIntegrityBySub(id, value) {
+	var subTL = extractSubTL(id);
+	var i, j;
+	for (i=subTL; i<subTL+27; i+=9)
+		for (j=0; j<3; j++) {
+			var targetCellID = i+j;
+			if (targetCellID!=id) {
+				var cell = document.getElementById(targetCellID);
+				if (cell!=null && cell.value!="") {
+					if (cell.value==value) {
+						console.log("INSIDE SUB");
+						return targetCellID;	// integrity failure
+					}
+				}
+			}
+		}
+	return 0;
+}
+
+function startAnimationConsistent() {
+	// TODO
+}
+
+function checkIntegrity(animate) {
+	var cellID = 0;
+	var flag;
+	for (; cellID<81; cellID++) { // iterate over all cells of the sudoku
+		if (flag=checkIntegrityCell(cellID)) {
+			
+			startAnimationIntegrityError(cellID, flag);
+			return flag;
+		}
+	}
+	if (animate) {
+		startAnimationConsistent();
+	}
+	console.log("200 OK");
+}
+
+function checkIntegrityCell(cellID) {
+	cell = document.getElementById(cellID);
+
+	if (cell!=null && cell.value!="") {
+		var checkRow = checkIntegrityByRow(cellID, cell.value);
+		if (checkRow) {
+			console.log("INTEGRITY ERROR of cell " + cellID + " with value " + cell.value);
+			return checkRow;
+		}
+
+		var checkCol = checkIntegrityByCol(cellID, cell.value);
+		if (checkCol) {
+			console.log("INTEGRITY ERROR of cell " + cellID + " with value " + cell.value);
+			return checkCol;
+		}
+
+		var checkSub = checkIntegrityBySub(cellID, cell.value);
+		if (checkSub) {
+			console.log("INTEGRITY ERROR of cell " + cellID + " with value " + cell.value);
+			return checkSub;
+		}
+	}
+	return 0;
+}
+
+function startAnimation(id) {
+  	
+  	row = getRow(parseInt(this.id));
+  	col = getCol(parseInt(this.id));
+  	console.log(this.id + " -- row: " + row + " col: " + col);
+
+  	var i;
+  	var queue = [];
+
+  	for (i=1; i<9; i++) {
+  		queue.push(parseRow(row, i, col).concat(parseCol(col, i, row)));
+  		setTimeout(colour, 200*i, (queue.shift()));
+  	}
+
+}
+
+function startAnimationIntegrityError(id, target) {
+	console.log("called");
+	$("#"+id).addClass("inconsistent");
+	$("#"+target).addClass("inconsistent");
+
+	setTimeout(function() {
+		$("#"+id).removeClass("inconsistent");
+		$("#"+target).removeClass("inconsistent");
+		$("#"+id).addClass("inconsistent2");
+		$("#"+target).addClass("inconsistent2");
+	}, 1000);
+
+	setTimeout(function() {
+
+		$("#"+id).removeClass("inconsistent2");
+		$("#"+target).removeClass("inconsistent2");
+		$("#"+id).addClass("inconsistent");
+		$("#"+target).addClass("inconsistent");
+	}, 3000);
+
+	setTimeout(function() {
+		$("#"+id).removeClass("inconsistent");
+		$("#"+target).removeClass("inconsistent");
+		$("#"+id).addClass("inconsistent2");
+		$("#"+target).addClass("inconsistent2");
+	}, 5000);
+
+	setTimeout(function() {
+
+		$("#"+id).removeClass("inconsistent2");
+		$("#"+target).removeClass("inconsistent2");
+	}, 7000);
+}
+
+$(document).ready(function(){
+  var i, j;
+  var cells = [];
+
+
+  for (i=0; i<9; i++) {	// row
+  	for (j=0; j<9; j++) {	// col
+  		var customClass = "number";
+  		var value = easy[i*9+j];
+  		var readonly = "";
+  		if (!value) value="";
+  		else {
+  			customClass += " valued";
+  			readonly = "readonly";
+  		}
+  		if (i==2 || i==5) customClass+= " bottom";
+  		else if (i==3 || i==6) customClass+= " top";
+  		if (j==2 || j==5) customClass+= " right";
+  		else if (j==3 || j==6) customClass+= " left";
+  		cells.push("<input class='" + customClass + "' id='" + (i*9+j) + "' type='text' value='" + value + "' " + readonly + "/>");
+  	}
+  }
+
+  $("#content").append("<table>");
+
+  for (i=0; i<9; i++) {
+  	$("#content").append("<tr>");
+  	for (j=0; j<9; j++) {
+  		$("#content").append("<td>" + cells[i*9+j] + "</td>");
+  	}
+  	$("#content").append("</tr>");
+  }
+
+  $("#content").append("</table>");
+
+});
+
+$(document).ready(function(){
+  /*$(".valued").click(function(){
+  	console.log("sono qua");
+
+  	startAnimation(this.id);
+
+  	checkIntegrityCell(this.id);
+  });*/
+  $("body").on("change", ".number", function(){
+  	var flag = checkIntegrityCell(this.id);
+  	if (flag) {
+  		startAnimationIntegrityError(this.id, flag);
+  		console.log(flag);
+  	}
+  	if (this.value!="") $("#"+this.id).addClass("valued");
+  	else $("#"+this.id).removeClass("valued");
+  });
+
+  $("body").on("click", ".valued", function(){
+  	var flag = checkIntegrityCell(this.id);
+  	if (flag) {
+  		startAnimationIntegrityError(this.id, flag);
+  		console.log(flag);
+  	}
+  	console.log("sono qua");
+  });
+});
+</script>
+</head>
+<body>
+
+<p>SUDOKU SOLVER</p>
+
+<div id="content"></div>
+
+<button id="checkIntegrity" onClick="checkIntegrity(1)">Check Integrity</button>
+
+</body>
+</html>
