@@ -15,6 +15,39 @@ function populateCSPWithCurrentValues() {
 	}
 }
 
+function solveDerivedConstraints() {
+	propagateConstraints();
+	var singleConstraintsQueue = getQueueOfSingleConstraints();
+
+	while(singleConstraintsQueue.length>0) {
+		assignValues(singleConstraintsQueue);
+		propagateConstraints();
+		singleConstraintsQueue = getQueueOfSingleConstraints();
+	}
+}
+
+function solveComplexConstraints() {
+	
+	var sortedConstraintList = getSortedConstraintList();
+	//console.log(sortedConstraintList);
+
+	while(sortedConstraintList.length>0) {
+
+		var currentConst = sortedConstraintList.shift();
+		var id = currentConst.shift();
+
+		while(currentConst.length>1) {
+			var flag = trySolve(id, currentConst.shift());
+		}
+
+
+		break;
+	}
+	
+
+	break;
+}
+
 function removeElem(myID, predecessorID) {
 	if (predecessorID==myID) return;
 
@@ -24,9 +57,6 @@ function removeElem(myID, predecessorID) {
 		if (index>=0)
 			csp[myID].splice(index, 1);
 	}
-	//else {
-		//console.log("elem #" + predecessorID + " skipped: empty cell");
-	//}
 }
 
 function propagateByRow(id) {
@@ -79,7 +109,7 @@ function SudokuIsSolved() {
 	return 1;
 }
 
-function collectValues() {
+function getQueueOfSingleConstraints() {
 	var i, queue=[];
 	for (i=0; i<81; i++) {
 		if (csp[i].length==1 && document.getElementById(i).value=="") queue.push(i);
@@ -93,34 +123,36 @@ function assignValues(queue) {
 		var id = queue.shift();
 		var cell = document.getElementById(id);
 		cell.value = csp[id][0].toString();
-		//console.log("assigned value " + cell.value + " to cell " + cell.id);
 		cell.classList.add("valued");
 	}
+}
+
+function getSortedConstraintList() {
+	var list = [];
+	var i=0, len=2;
+	
+	for (; len<10;len++)
+		for (i=0; i<81; i++) {
+			if(csp[i].length == len) list.push([i].concat(csp[i]));
+		}
+
+	return list;
 }
 
 function solve() {
 
 	populateCSPWithCurrentValues();
 
-	while(!SudokuIsSolved()) {
-		propagateConstraints();
-		var queue = collectValues();
+	solveDerivedConstraints();
 
-		while(queue.length>0) {
-			console.log("queue: " + queue);
-			assignValues(queue);
-			propagateConstraints();
-			queue = collectValues();
-			console.log("while finished, queue has " + queue.length + " elements");
-			//break; 
-		}
-
-			// mo so cazzi
+	if(!SudokuIsSolved()) {
 		
+		// mo so cazzi
 
-		break;
+		solveComplexConstraints();
 
 	}
 
+	console.log("sudoku is solved? " + SudokuIsSolved());
 
 }

@@ -1,51 +1,51 @@
 .number {
-			width:  34px;
-			height: 34px;
-			padding: 12px 20px;
-  box-sizing: border-box;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  background-color: #f8f8f8;
-  resize: none;
-  padding:0;
-		}
-		.right {
-			border-right:2px solid black;
-		}
-		.left {
-			border-left:2px solid black;
-		}
-		.bottom {
-			border-bottom:2px solid black;
-		}
-		.top {
-			border-top:2px solid black;
-		}
-		.number {
-			text-align: center;
-		}
-		.valued {
-			background-color: lightgrey;
-		}
-		.inconsistent {
-			background-color: #FF8000;
-			-webkit-transition: background 1s linear;
-			-moz-transition: background 1s linear;
-			-ms-transition: background 1s linear;
-			-o-transition: background 1s linear;
-			transition: background 1s linear;
-		}
-		.inconsistent2 {
-			background-color: white;
-			-webkit-transition: background 1s linear;
-			-moz-transition: background 1s linear;
-			-ms-transition: background 1s linear;
-			-o-transition: background 1s linear;
-			transition: background 1s linear;
-		}
+	width:  34px;
+	height: 34px;
+	padding: 12px 20px;
+	box-sizing: border-box;
+	border: 2px solid #ccc;
+	border-radius: 4px;
+	background-color: #f8f8f8;
+	resize: none;
+	padding:0;
+}
+.right {
+	border-right:2px solid black;
+}
+.left {
+	border-left:2px solid black;
+}
+.bottom {
+	border-bottom:2px solid black;
+}
+.top {
+	border-top:2px solid black;
+}
+.number {
+	text-align: center;
+}
+.valued {
+	background-color: lightgrey;
+}
+.inconsistent {
+	background-color: #FF8000;
+	-webkit-transition: background 1s linear;
+	-moz-transition: background 1s linear;
+	-ms-transition: background 1s linear;
+	-o-transition: background 1s linear;
+	transition: background 1s linear;
+}
+.inconsistent2 {
+	background-color: white;
+	-webkit-transition: background 1s linear;
+	-moz-transition: background 1s linear;
+	-ms-transition: background 1s linear;
+	-o-transition: background 1s linear;
+	transition: background 1s linear;
+}
 
-		#checkIntegrity {
-			position: absolute;
-			left: 300px;
-			margin-top: 35px;
-		}
+#checkIntegrity {
+	position: absolute;
+	left: 300px;
+	margin-top: 35px;
+}
