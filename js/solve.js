@@ -1,7 +1,5 @@
 
-csp = [];
-
-function populateCSPWithCurrentValues() {
+function populateCSPWithCurrentValues(csp) {
 	var i;
 	for (i=0; i< 81; i++) {
 		var cell = document.getElementById(i);
@@ -13,41 +11,61 @@ function populateCSPWithCurrentValues() {
 			bucket = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 		csp.push(bucket);
 	}
+	return csp;
 }
 
-function solveDerivedConstraints() {
-	propagateConstraints();
-	var singleConstraintsQueue = getQueueOfSingleConstraints();
+function solveDerivedConstraints(csp, isBacktrackingActive) {
+	csp = propagateConstraints(csp);
+	var singleConstraintsQueue = getQueueOfSingleConstraints(csp);
 
 	while(singleConstraintsQueue.length>0) {
-		assignValues(singleConstraintsQueue);
-		propagateConstraints();
-		singleConstraintsQueue = getQueueOfSingleConstraints();
+		if (!isBacktrackingActive)
+			assignValues(singleConstraintsQueue, csp);
+		csp = propagateConstraints(csp);
+		singleConstraintsQueue = getQueueOfSingleConstraints(csp);
 	}
+	return csp;
 }
 
-function solveComplexConstraints() {
+function solveComplexConstraints(csp) {
 	
-	var sortedConstraintList = getSortedConstraintList();
+	var sortedConstraintList = getSortedConstraintList(csp);
 	//console.log(sortedConstraintList);
 
 	while(sortedConstraintList.length>0) {
 
-		var currentConst = sortedConstraintList.shift();
-		var id = currentConst.shift();
+		var currentConstraintsList = sortedConstraintList.shift();
+		var currentCellID = currentConstraintsList.shift();
 
-		while(currentConst.length>1) {
-			var flag = trySolve(id, currentConst.shift());
+		while(currentConstraintsList.length>1) {
+			var currentConstraint = currentConstraintsList.shift();
+			var backtrackingIsActive = 1;
+			
+		console.log("imposing value '" + currentConstraint + "' to cell " + currentCellID);
+
+			var temp = csp[currentCellID];
+
+			csp[currentCellID] = [currentConstraint];
+
+			var virtualSolution = solve(csp, backtrackingIsActive);
+			if (virtualSolution==null || SudokuIsSolved(virtualSolution))
+				csp[currentCellID] = temp;
+			else
+				return csp;
+			
 		}
 
 
 		break;
 	}
+
+	console.log("NO SOLUTION FOUND!!");
+	return null;	// ERROR
 	
 }
 
-function removeElem(myID, predecessorID) {
-	if (predecessorID==myID) return;
+function removeElem(csp, myID, predecessorID) {
+	if (predecessorID==myID) return csp;
 
 	cell = document.getElementById(predecessorID);
 	if (cell.value!="") {
@@ -55,59 +73,62 @@ function removeElem(myID, predecessorID) {
 		if (index>=0)
 			csp[myID].splice(index, 1);
 	}
+	return csp;
 }
 
-function propagateByRow(id) {
+function propagateByRow(csp, id) {
 	var base = getRow(id)*9;
 	var i;
-	for (i=base; i<base+9; i++) {
-		removeElem(id, i);
-	}
+	for (i=base; i<base+9; i++)
+		csp = removeElem(csp, id, i);
+	return csp;
 }
 
-function propagateByCol(id) {
+function propagateByCol(csp, id) {
 	var col = getCol(id);
 	var i;
-	for (i=col; i<81; i+=9) {
-		removeElem(id, i);
-	}
+	for (i=col; i<81; i+=9)
+		csp = removeElem(csp, id, i);
+	return csp;
 }
 
-function propagateBySub(id) {
+function propagateBySub(csp, id) {
 	var subTL = getSubTL(id);
 	var i, j;
 	for (i=subTL; i<subTL+27; i+=9)
 		for (j=0; j<3; j++) {
 			var targetCellID = i+j;
-			removeElem(id, targetCellID);
+			csp = removeElem(csp, id, targetCellID);
 		}
+		return csp;
 }
 
-function propagateConstraints() {
+function propagateConstraints(csp) {
 	var i;
 	for (i=0; i<81; i++) {
 		cell = document.getElementById(i);
 
 		if (cell.value=="") {
-			propagateByRow(i);
-			propagateByCol(i);
-			propagateBySub(i);
+			csp = propagateByRow(csp, i);
+			csp = propagateByCol(csp, i);
+			csp = propagateBySub(csp, i);
 		}
 	}
+	return csp;
 }
 
-function checkCellSolved(id) {
+function checkCellSolved(csp, id) {
 	return csp[id].length==1;
 }
 
-function SudokuIsSolved() {
+function SudokuIsSolved(csp) {
 	var i;
 	for (i=0;i<81;i++)
-		if (!checkCellSolved(i)) return 0;
+		if (!checkCellSolved(csp, i)) return 0;
 	return 1;
 }
 
-function getQueueOfSingleConstraints() {
+function getQueueOfSingleConstraints(csp) {
 	var i, queue=[];
 	for (i=0; i<81; i++) {
 		if (csp[i].length==1 && document.getElementById(i).value=="") queue.push(i);
@@ -116,7 +137,7 @@ function getQueueOfSingleConstraints() {
 	return queue;
 }
 
-function assignValues(queue) {
+function assignValues(queue, csp) {
 	while(queue.length>0) {
 		var id = queue.shift();
 		var cell = document.getElementById(id);
@@ -125,7 +146,7 @@ function assignValues(queue) {
 	}
 }
 
-function getSortedConstraintList() {
+function getSortedConstraintList(csp) {
 	var list = [];
 	var i=0, len=2;
 	
@@ -137,20 +158,22 @@ function getSortedConstraintList() {
 	return list;
 }
 
-function solve() {
+function solve(csp, isBacktrackingActive) {
 
-	populateCSPWithCurrentValues();
+	console.log("solve called");
 
-	solveDerivedConstraints();
+	if (!isBacktrackingActive) csp = populateCSPWithCurrentValues(csp);
 
-	if(!SudokuIsSolved()) {
+	csp = solveDerivedConstraints(csp, isBacktrackingActive);
+
+	// if sudoku csp already solved, no need to do complex things
+	if(!SudokuIsSolved(csp)) {
 		
 		// mo so cazzi
-
-		solveComplexConstraints();
-
+		csp = solveComplexConstraints(csp);
+		assignValues(csp);
 	}
 
-	console.log("sudoku is solved? " + SudokuIsSolved());
+	console.log("sudoku is solved? " + SudokuIsSolved(csp));
 
 }
